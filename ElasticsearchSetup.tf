@@ -37,3 +37,7 @@ data "vsphere_resource_pool" "pool" {
   name          = "${module.credentials.resource_pool_name}" # ESXi can leave this blank
   datacenter_id = "${data.vsphere_datacenter.datacenter.id}"
 }
+
+# TODO: create the first Debian machine on here
+# TODO: figure out how to 'install' things on it using Ansible...
+# TODO: can we use Ansible to manage things rather than Terraform since it always seems to seek to destroy everything and start over... 
