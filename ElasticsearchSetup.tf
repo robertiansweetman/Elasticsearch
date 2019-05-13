@@ -32,7 +32,8 @@ data "vsphere_resource_pool" "pool" {
   datacenter_id = "${data.vsphere_datacenter.datacenter.id}"
 }
 
-# FIXME: possibly missing ==> data "vsphere_datastore" "datastore" {} 
+# FIXME: possibly missing ==> data "vsphere_datastore" "datastore" {}
+# FIXME: Storage in VSphere is Non-SSD <== how do you reference this?
 
 # get template name from global_variables.tf
 data "vsphere_virtual_machine" "template" {
@@ -60,25 +61,27 @@ resource "vsphere_virtual_machine" "vm" {
 
   disk {
     label = "disk0"
-    size  = 40
+    size  = 80
   }
 
   clone {
     template_uuid = "${data.vsphere_virtual_machine.template.id}"
 
     # TODO: understand what these are and configure them properly
+    # TODO: if you don't specify these values do they inherit from the template?
+    # FIXME: What is the IP range for the Dec Misc Network?
     customize {
       linux_options {
-        host_name = "terraform-test"
-        domain    = "test.internal"
+        host_name = "qa-elastic"
+        # domain    = "test.internal" <== don't think we are on the domain!
       }
 
     network_interface {
-        ipv4_address = "10.0.0.10"
+        ipv4_address = "10.0.0.10" #172.16.200.0
         ipv4_netmask = 24
       }
 
-      ipv4_gateway = "10.0.0.1"
+      ipv4_gateway = "10.0.0.1" #172.16.200.1
     }  
   }
 }
