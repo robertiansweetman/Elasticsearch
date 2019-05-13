@@ -1,12 +1,6 @@
-# TODO: add reference to global variables
-
-# VMWare 'control' script
-# TODO: Add these later
-# Prepare global variables
-
-# module "global_variables" {
-#  source="./Modules/Shared/global_variables"
-# }
+module "global_variables" {
+  source = "./Modules/Shared/global_variables"
+}
 
 module "credentials" {
   source = "./Modules/Shared/credentials"
@@ -38,7 +32,53 @@ data "vsphere_resource_pool" "pool" {
   datacenter_id = "${data.vsphere_datacenter.datacenter.id}"
 }
 
+# FIXME: possibly missing ==> data "vsphere_datastore" "datastore" {} 
+
+# get template name from global_variables.tf
+data "vsphere_virtual_machine" "template" {
+  name = "${module.global_variables.template_name}"
+  datacenter_id = "${data.vsphere_datacenter.datacenter.id}"
+}
+
 # TODO: might have to look in a folder for sthg
 # TODO: create the first Debian machine on here
 # TODO: figure out how to 'install' things on it using Ansible...
 # TODO: can we use Ansible to manage things rather than Terraform since it always seems to seek to destroy everything and start over... 
+
+resource "vsphere_virtual_machine" "vm" {
+  name = "qa-elasticsearch"
+  resource_pool_id = "${data.vsphere_resource_pool.pool.id}"
+  num_cpus = 1
+  memory = 2048
+  guest_id = "${data.vsphere_virtual_machine.template.guest_id}"
+  scsi_type = "${data.vsphere_virtual_machine.template.scsi_type}"
+
+  network_interface {
+    network_id = "${data.vsphere_network.network.id}"
+    adapter_type = "${data.vsphere_virtual_machine.template.network_interface_types[0]}"
+  } 
+
+  disk {
+    label = "disk0"
+    size  = 40
+  }
+
+  clone {
+    template_uuid = "${data.vsphere_virtual_machine.template.id}"
+
+    # TODO: understand what these are and configure them properly
+    customize {
+      linux_options {
+        host_name = "terraform-test"
+        domain    = "test.internal"
+      }
+
+    network_interface {
+        ipv4_address = "10.0.0.10"
+        ipv4_netmask = 24
+      }
+
+      ipv4_gateway = "10.0.0.1"
+    }  
+  }
+}
