@@ -1,3 +1,4 @@
 credentials.tf
 creds.tf
 .terraform
+terraform.*

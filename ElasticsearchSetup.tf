@@ -1,3 +1,6 @@
+# TODO: figure out how to 'install' things on it using Ansible...
+# TODO: can we use Ansible to manage things rather than Terraform ?
+
 module "global_variables" {
   source = "./Modules/Shared/global_variables"
 }
@@ -32,19 +35,16 @@ data "vsphere_resource_pool" "pool" {
   datacenter_id = "${data.vsphere_datacenter.datacenter.id}"
 }
 
-# FIXME: possibly missing ==> data "vsphere_datastore" "datastore" {}
-# FIXME: Storage in VSphere is Non-SSD <== how do you reference this?
+data "vsphere_datastore" "datastore" {
+  name      = "Non-SSD"
+  datacenter_id = "${data.vsphere_datacenter.datacenter.id}"
+}
 
 # get template name from global_variables.tf
 data "vsphere_virtual_machine" "template" {
   name = "${module.global_variables.template_name}"
   datacenter_id = "${data.vsphere_datacenter.datacenter.id}"
 }
-
-# TODO: might have to look in a folder for sthg
-# TODO: create the first Debian machine on here
-# TODO: figure out how to 'install' things on it using Ansible...
-# TODO: can we use Ansible to manage things rather than Terraform since it always seems to seek to destroy everything and start over... 
 
 resource "vsphere_virtual_machine" "vm" {
   name = "qa-elasticsearch"
@@ -66,22 +66,22 @@ resource "vsphere_virtual_machine" "vm" {
 
   clone {
     template_uuid = "${data.vsphere_virtual_machine.template.id}"
-
-    # TODO: understand what these are and configure them properly
-    # TODO: if you don't specify these values do they inherit from the template?
-    # FIXME: What is the IP range for the Dec Misc Network?
-    customize {
-      linux_options {
-        host_name = "qa-elastic"
-        # domain    = "test.internal" <== don't think we are on the domain!
-      }
-
-    #network_interface {
-    #    ipv4_address = "10.0.0.10" #172.16.200.0
-    #    ipv4_netmask = 24
-    #  }
-
-    #  ipv4_gateway = "10.0.0.1" #172.16.200.1
-    }  
   }
+
+  # TODO: Take a proper look at 'clone' params and UNDERSTAND THEM
+  # FIXME: Need to add a hostname, which REQUIRES a domain parameter
+  # customize {
+  #   linux_options {
+  #    host_name = "qa-elastic"
+  #    domain    = "test.internal" <== don't think we are on the domain!
+  #   }
+
+  #   network_interface {
+  #    ipv4_address = "10.0.0.10" #172.16.200.0
+  #    ipv4_netmask = 24
+  #   }
+
+  #   ipv4_gateway = "10.0.0.1" #172.16.200.1
+  # }  
+  
 }
