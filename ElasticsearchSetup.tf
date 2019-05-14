@@ -76,12 +76,12 @@ resource "vsphere_virtual_machine" "vm" {
         # domain    = "test.internal" <== don't think we are on the domain!
       }
 
-    network_interface {
-        ipv4_address = "10.0.0.10" #172.16.200.0
-        ipv4_netmask = 24
-      }
+    #network_interface {
+    #    ipv4_address = "10.0.0.10" #172.16.200.0
+    #    ipv4_netmask = 24
+    #  }
 
-      ipv4_gateway = "10.0.0.1" #172.16.200.1
+    #  ipv4_gateway = "10.0.0.1" #172.16.200.1
     }  
   }
 }
